@@ -4,18 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>News App Demo</title>
+    <title>News App</title>
     <link rel="stylesheet" href="/assets/styles.css" />
   </head>
   <body>
     <main>
       <header>
-        <a class="logo" href="/">News Demo</a>
+        <a class="logo" href="/">Search the News you want</a>
         <form action="/search" method="GET">
           <input
             autofocus
             class="search-input"
-            value=""
+            value="{{ .Query }}"
             placeholder="Enter a news topic"
             type="search"
             name="q"
@@ -27,6 +27,25 @@
           >View on GitHub</a
         >
       </header>
+      <section class="container">
+        <ul class="search-results">
+          {{ range.Results.Articles }}
+          <li class="news-article">
+            <div>
+              <a target="_blank" rel="noreferrer noopener" href="{{.URL}}">
+                <h3 class="title">{{.Title }}</h3>
+              </a>
+              <p class="description">{{ .Description }}</p>
+              <div class="metadata">
+                <p class="source">{{ .Source.Name }}</p>
+                <time class="published-date">{{ .PublishedAt }}</time>
+              </div>
+            </div>
+            <img class="article-image" src="{{ .URLToImage }}" />
+          </li>
+          {{ end }}
+        </ul>
+      </section>
     </main>
   </body>
 </html>

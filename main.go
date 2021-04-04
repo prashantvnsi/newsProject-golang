@@ -1,22 +1,38 @@
 package main
 
 import (
-	"time"
+	"bytes"
 	"html/template"
+	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
-	"log"
-	"fmt"
+	"strconv"
+	"time"
+	
 	"github.com/joho/godotenv"
 	"github.com/prashantvnsi/newsProject-golang/news"
 )
 
 var tpl = template.Must(template.ParseFiles("index.html"))
 
+type Search struct {
+	Query      string
+	NextPage   int
+	TotalPages int
+	Results    *news.Results
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	//w.Write([]byte("<h1>Hello World!</h1>"))
-	tpl.Execute(w, nil)
+	buf := &bytes.Buffer{}
+	err := tpl.Execute(buf, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	buf.WriteTo(w)
 }
 
 func searchHandler(newsapi *news.Client) http.HandlerFunc {
@@ -39,11 +55,30 @@ func searchHandler(newsapi *news.Client) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Println("%+v", results)
+
+		nextPage, err := strconv.Atoi(page)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		search := &Search{
+			Query:      searchQuery,
+			NextPage:   nextPage,
+			TotalPages: int(math.Ceil(float64(results.TotalResults / newsapi.PageSize))),
+			Results:    results,
+		}
+
+		buf := &bytes.Buffer{}
+		err = tpl.Execute(buf, search)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		buf.WriteTo(w)
 	}
 }
-
-var newsapi *news.Client
 
 func main() {
 	err := godotenv.Load()
@@ -62,7 +97,6 @@ func main() {
 	}
 
 	myClient := &http.Client{Timeout: 10 * time.Second}
-	//newsapi := news.NewClient(myClient, apiKey, 20)
 	newsapi := news.NewClient(myClient, apiKey, 20)
 
 	fs := http.FileServer(http.Dir("assets"))
