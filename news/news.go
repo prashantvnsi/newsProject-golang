@@ -64,3 +64,8 @@ func NewClient(httpClient *http.Client, key string, pageSize int) *Client {
 
 	return &Client{httpClient, key, pageSize}
 }
+
+func (a *Article) FormatPublishedDate() string {
+	year, month, day := a.PublishedAt.Date()
+	return fmt.Sprintf("%v %d, %d", month, day, year)
+}
