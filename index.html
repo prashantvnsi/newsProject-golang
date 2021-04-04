@@ -54,6 +54,24 @@
           </li>
           {{ end }}
         </ul>
+        <div class="pagination">
+          {{ if . }}
+            {{ if (gt .NextPage 2) }}
+            <a
+              href="/search?q={{ .Query }}&page={{ .PreviousPage }}"
+              class="button previous-page"
+              >Previous</a
+            >
+            {{ end }}
+            {{ if (ne .IsLastPage true) }}
+            <a
+              href="/search?q={{ .Query }}&page={{ .NextPage }}"
+              class="button next-page"
+              >Next</a
+            >
+            {{ end }}
+          {{ end }}
+        </div>
       </section>
     </main>
   </body>
